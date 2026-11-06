@@ -1,5 +1,5 @@
 diff --git a/browser/components/customkeys/CustomKeys.sys.mjs b/browser/components/customkeys/CustomKeys.sys.mjs
-index 76f99381ab7011992b8f28f8d031ed41f73d6293..070518c5aa3b3d77447f2ba63e288948af5a25ae 100644
+index 76f99381ab7011992b8f28f8d031ed41f73d6293..200f66e5c71f6e9aca1399c487488a6801da164d 100644
 --- a/browser/components/customkeys/CustomKeys.sys.mjs
 +++ b/browser/components/customkeys/CustomKeys.sys.mjs
 @@ -4,6 +4,13 @@
@@ -24,3 +24,49 @@ index 76f99381ab7011992b8f28f8d031ed41f73d6293..070518c5aa3b3d77447f2ba63e288948
  }
  
  function refreshKeysets(window, keysets) {
+@@ -187,6 +195,7 @@ export const CustomKeys = {
+       refreshKeysets(window, keysets);
+     }
+     config.saveSoon();
++    Services.obs.notifyObservers(null, "zen-custom-keys-changed");
+   },
+ 
+   /**
+@@ -206,6 +215,7 @@ export const CustomKeys = {
+     }
+     delete original[id];
+     config.saveSoon();
++    Services.obs.notifyObservers(null, "zen-custom-keys-changed");
+   },
+ 
+   /**
+@@ -260,6 +270,7 @@ export const CustomKeys = {
+       delete original[id];
+     }
+     config.saveSoon();
++    Services.obs.notifyObservers(null, "zen-custom-keys-changed");
+   },
+ 
+   initWindow(window) {
+@@ -295,6 +306,21 @@ export const CustomKeys = {
+     }
+     return data;
+   },
++
++  /**
++   * Return a snapshot of all current customizations, keyed by key-element id:
++   * { "<id>": { modifiers?, key?, keycode? } }. An empty entry means the
++   * shortcut's default has been cleared. Used by Zen settings sync to project
++   * the live state without touching the on-disk file.
++   */
++  getAll() {
++    config.ensureDataReady();
++    const out = {};
++    for (const [id, binding] of Object.entries(config.data)) {
++      out[id] = { ...binding };
++    }
++    return out;
++  },
+ };
+ 
+ Object.freeze(CustomKeys);
